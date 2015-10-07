@@ -4,6 +4,8 @@
 #include <boolean.h>
 #include "init.h"
 
+#define VERSION_ID 12
+
 extern void _delay(int);
 
 statusRtn init(void)
@@ -36,7 +38,12 @@ statusRtn init(void)
 	//Set as Output High (initially)
 	SET(DDRD,7);	//Direction: output
 	CLEAR(PORTD,7);	//State: Lo
-
+	
+	//Profiling LED - PB0
+	//Set as Output High (initially)
+	SET(DDRB,0);	//Direction: output
+	CLEAR(PORTB,0);	//State: Lo	
+	
 	PRR = 0x00;	//DIsable all power reduction
 	
 	//ATMega328 Datasheet Section 16.11.1 pg 132 - TCCR1A
@@ -149,7 +156,7 @@ statusRtn init(void)
 	
 	while(FALSE == READ(UCSR0A,6));
 	
-	UDR0 = 0xA5;
+	UDR0 = VERSION_ID;
 	
 	//Wait until transmit is complete
 	while(FALSE == READ(UCSR0A,6));
