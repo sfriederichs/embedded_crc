@@ -172,8 +172,7 @@ int main(void)
 					blkUARTTx((uint8_t)((crc>>(i*8)) & 0x000000FF));
 				}								
 								//Wait until transmit is complete
-				while(FALSE == READ(UCSR0A,6));
-				UDR0 = 0xFF;
+
 				
 				_delay_ms(1);
 				blkUARTTx(0xFF);
