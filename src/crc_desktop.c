@@ -89,7 +89,15 @@ static const crc_t crc_table[256] = {
     0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
 
-unsigned char testString[] = "123456789";
+/**
+ * Calculate the initial crc value.
+ *
+ * \return     The initial crc value.
+ *****************************************************************************/
+static inline crc_t crc_init(void)
+{
+    return 0xffffffff;
+}
 
 /**
  * Update the crc value with new data.
@@ -112,36 +120,52 @@ crc_t crc_update(crc_t crc, const unsigned char *data, size_t data_len)
     return crc & 0xffffffff;
 }
 
+/**
+ * Calculate the final crc value.
+ *
+ * \param crc  The current crc value.
+ * \return     The final crc value.
+ *****************************************************************************/
+static inline crc_t crc_finalize(crc_t crc)
+{
+    return crc ^ 0x00000000;
+}
+
 int main(void)
 {
 	unsigned char byte;
-	static crc_t crc = 0xFFFFFFFF;
+	char * testString = "123456789";
+	#define TEST_STR_LEN 9
+	static crc_t crc;
 	FILE * binFileHandle;
 	printf("CRC Test Tool v0.1\r\n");
 	printf("Author - Stephen Friederichs\r\n");
+	
+	crc = crc_init();
+    crc = crc_update(crc,(unsigned char *)&testString[0],TEST_STR_LEN);
+	crc = crc_finalize(crc);
+	
+	printf("CRC Check: %08X\r\n",(unsigned int)crc);
 
-#ifdef USE_FILE
-  binFileHandle = fopen("data/crcData.bin","r");
+	binFileHandle = fopen("data/data.bin","r");
 
-  if(NULL == binFileHandle)
-  {
-	return -1;
-  }
-    
-  while(1)
-  {
-	byte = fgetc(binFileHandle);
-	if(feof(binFileHandle))
-		break;
-    crc = crc_update(crc,&byte,1);
-  }
+	if(NULL == binFileHandle)
+	{
+		return -1;
+	}
+	crc=crc_init();
+	while(1)
+	{
+		byte = fgetc(binFileHandle);
+		if(feof(binFileHandle))
+			break;
+		crc = crc_update(crc,&byte,1);
+	}
   
-  fclose(binFileHandle);
-#else
-  crc = crc_update(crc,&testString[0],9)
-#endif
+	fclose(binFileHandle);
+	crc = crc_finalize(crc);
 
-	printf("Calculated CRC: %08X\r\n",(unsigned int)crc);
+	printf("data.bin CRC: %08X\r\n",(unsigned int)crc);
 	
 	return 0;
 
